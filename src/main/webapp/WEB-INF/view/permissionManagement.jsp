@@ -284,7 +284,7 @@
                                 <th>${permission.name}</th>
                                 <th>
                                     <c:choose>
-                                        <c:when test="${fn:contains(permission.expression,'com.etop')}">
+                                        <c:when test="${fn:contains(permission.expression,'cn.etop')}">
                                             <button class="btn btn-warning glyphicon glyphicon-cog btn-sm disabled">
                                                 禁止编辑
                                             </button>

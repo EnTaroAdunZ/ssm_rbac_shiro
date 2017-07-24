@@ -18,7 +18,7 @@
             <property name="forceBigDecimals" value="false" />
         </javaTypeResolver>
 
-        <javaModelGenerator targetPackage="com.etop.pojo" targetProject=".\src\main\java">
+        <javaModelGenerator targetPackage="com.etop.modules.model" targetProject=".\src\main\java">
             <property name="enableSubPackages" value="true" />
             <property name="trimStrings" value="true" />
         </javaModelGenerator>
@@ -26,7 +26,7 @@
         <sqlMapGenerator targetPackage="mapper"  targetProject=".\src\main\resources">
             <property name="enableSubPackages" value="true" />
         </sqlMapGenerator>
-        <javaClientGenerator type="XMLMAPPER" targetPackage="com.etop.dao"  targetProject=".\src\main\java">
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.etop.modules.mapper" targetProject=".\src\main\java">
             <property name="enableSubPackages" value="true" />
         </javaClientGenerator>
 

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.etop.rbac.modules.mapper.RoleMapper">
+  <resultMap id="BaseResultMap" type="cn.etop.rbac.modules.model.Role">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="sn" jdbcType="VARCHAR" property="sn" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from tbl_role
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="cn.etop.rbac.modules.model.Role">
+    insert into tbl_role (id, sn, name)
+    values (#{id,jdbcType=BIGINT}, #{sn,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.etop.rbac.modules.model.Role">
+    update tbl_role
+    set sn = #{sn,jdbcType=VARCHAR},
+      name = #{name,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select id, sn, name
+    from tbl_role
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectBySn" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select id, sn, name
+    from tbl_role
+    where sn = #{sn}
+  </select>
+  <select id="selectByName" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select id, sn, name
+    from tbl_role
+    where name = #{name}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, sn, name
+    from tbl_role
+  </select>
+  <resultMap type="cn.etop.rbac.modules.model.Role" id="rolePermission">
+    <collection property="permissionList" ofType="cn.etop.rbac.modules.model.Permission">
+      <id column="pid" property="id"/>
+      <result column="pexpression" property="expression"/>
+      <result column="pname" property="name"/>
+    </collection>
+  </resultMap>
+  <select id="listPermission" resultMap="rolePermission"  parameterType="java.lang.Long">
+    select tbl_permission.id 'pid'
+    , tbl_permission.name 'pname', tbl_permission.expression 'pexpression'
+    from  tbl_role
+    left join role_rp_ref_permission  on tbl_role.id =role_rp_ref_permission.role
+    left join tbl_permission on tbl_permission.id =role_rp_ref_permission.permission
+    WHERE  tbl_role.id = #{wid}
+  </select>
+  <select id="selectByKeyWord" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select id, sn, name
+     from tbl_role
+    WHERE name LIKE CONCAT(CONCAT('%',#{keyWord},'%'))
+  </select>
+</mapper>

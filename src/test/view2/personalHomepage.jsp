@@ -45,7 +45,7 @@
             var isExit=false;
             set.forEach(function (element, index, array) {
                 window.console.log(element);
-                if(element=="com.etop.controller.HomePageController.userManagement")
+                if(element=="HomePageController.userManagement")
                 {
                     isExit=true;
                 }

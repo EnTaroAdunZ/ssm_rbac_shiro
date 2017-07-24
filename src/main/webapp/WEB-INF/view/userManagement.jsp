@@ -55,7 +55,7 @@
     <script>
         var ID;
         var KW;
-
+        var pagenumber;
         $(document).ready(function () {
 
             $(".userinfo").click(function () {
@@ -69,11 +69,17 @@
                     $("#userinfodrop").attr("style","display:block;");
                 }
             });
-            window.onload =function() { KW=""; goToPage(KW,1) };
+            window.onload =function() {
+                KW="";
+                var pn=${pn};
+                goToPage(KW,pn);
+            };
             $(document).on('click','.deleteBtn',function(){
                     ID = $(this).attr("name");
                     document.getElementById("ID_SHOW").innerHTML = "ID:" + ID;
                     $("#deleteID").attr("value", ID);
+                      pagenumber=$("ul.pagination li.active a").attr("name");
+                     $('#form_delete').attr("action","user/userDelete?pn="+pagenumber+"&&keyWord="+KW);
             });
             $(document).on('click','.editBtn',function(){
                     ID = $(this).attr("name");
@@ -138,7 +144,7 @@
             $(document).on('click','.roleBtn',function(){
                 ID = $(this).attr("name");
                 $("#roleHandler").empty();
-                $("#roleHandler").append("<h5></h5>").append("你没有获得该权限！");
+                $("#roleHandler").append("<span></span>").append("你没有获得该权限！").attr("style","font-size:35px");
                 ID = $(this).attr("name");
                 $("#editID").attr("value", ID);
                 $.ajax({
@@ -146,27 +152,33 @@
                     data: "ID=" + ID,
                     type: "GET",
                     success: function (result) {
-                        var roleList = result.extend.roleJsons;
-                        $("#roleHandler").empty();
-                        $.each(roleList, function (index, item) {
-                            var isExit = item.exit;
-                            if (isExit == false) {
-                                var roleBtn = $("<button></button>")
-                                    .addClass("btn roleBtnShow")
-                                    .attr("type", "button")
-                                    .attr("id", item.role.id)
-                                    .append(item.role.name);
-                                $("#roleHandler").append(roleBtn);
-                            }
-                            else {
-                                var roleBtn = $("<button></button>")
-                                    .addClass("btn roleBtnShow btn-info")
-                                    .attr("type", "button")
-                                    .attr("id", item.role.id)
-                                    .append(item.role.name);
-                                $("#roleHandler").append(roleBtn);
-                            }
-                        });
+                        if(result.code==100){
+                            var roleList = result.extend.roleJsons;
+                            $("#roleHandler").empty();
+                            $.each(roleList, function (index, item) {
+                                var isExit = item.exit;
+                                if (isExit == false) {
+                                    var roleBtn = $("<button></button>")
+                                        .addClass("btn roleBtnShow")
+                                        .attr("type", "button")
+                                        .attr("id", item.role.id)
+                                        .append(item.role.name);
+                                    $("#roleHandler").append(roleBtn);
+                                }
+                                else {
+                                    var roleBtn = $("<button></button>")
+                                        .addClass("btn roleBtnShow btn-info")
+                                        .attr("type", "button")
+                                        .attr("id", item.role.id)
+                                        .append(item.role.name);
+                                    $("#roleHandler").append(roleBtn);
+                                }
+                            });
+                        }
+                        else{
+                            $("#roleHandler").empty();
+                            $("#roleHandler").append("<h5></h5>").append(result.extend.returnMsg).attr("style","font-size:35px");
+                        }
                     }
                 });
 
@@ -196,8 +208,14 @@
                     url: "role/updateRoleJson",
                     data: "roleList=" + roleList,
                     type: "GET",
-                    success: function () {
-                        $("#closeRoleChance").click();
+                    success: function (result) {
+                        if(result.code==100){
+                            $("#closeRoleChance").click();
+                        }else{
+                            $("#closeRoleChance").click();
+                            show_errorWindows(result.extend.returnMsg);
+                        }
+
                     }
                 });
             });
@@ -205,6 +223,7 @@
             $('#keyword').bind('input oninput', function() {
                 var KeyWord=$('#keyword').val();
                 KW=KeyWord;
+
                 goToPage(KeyWord,1);
             });
 
@@ -221,9 +240,10 @@
                                 build_user_tal(item);
                             });
                             var pageInfo=result.extend.pageInfo;
+                            pagenumber=pageInfo.pageNum;
                             build_user_nav(pageInfo);
                         }else{
-                            //交互出错时的处理
+                            show_errorWindows(result.extend.returnMsg);
                         }
                     }
                 });
@@ -245,6 +265,11 @@
                     }
                 });
             });
+
+            function show_errorWindows(errorMsg) {
+                $("#errorWindow_msg").text(errorMsg);
+                $("#errorWindom").modal();
+            }
 
             function build_user_tal(item) {
                 var tr=$("<tr></tr>").addClass("tr_user");
@@ -460,7 +485,11 @@
                             if(result.code==100){
                                 $("#btn_closeAdd").click();
                                 goToPage("",${pageInfo.pages});
-                            }else{
+                            }else if(result.code==250){
+                                $("#btn_closeAdd").click();
+                                show_errorWindows(result.extend.returnMsg);
+                            }
+                            else if(result.code==200){
                                 var errorMap=result.extend.errorMap;
                                 $.each(errorMap,function (index,item) {
                                     show_help_block(index,"error",item);
@@ -492,18 +521,20 @@
                         type: "POST",
                         success: function (result) {
                             if(result.code==100){
-
                                 $("#btn_closeEdit").click();
-
                                 goToPage(KW,$("ul.pagination li.active a").attr("name"));
-
-                            }else{
+                            }else if(result.code==250){
+                                $("#btn_closeEdit").click();
+                                show_errorWindows(result.extend.returnMsg);
+                            }
+                            else if(result.code==200){
                                 var errorMap=result.extend.errorMap;
                                 $.each(errorMap,function (index,item) {
                                     show_help_block(index,"error",item);
-
                                 });
                             }
+                            $("#edit_form input.form-control").next("span").text("");
+                            $("#edit_form input.form-control").parent().removeClass("has-success has-warning");
                         }
                     });
                 }
@@ -579,8 +610,8 @@
             $("#editPassword").bind('input propertychange', function () {
                 checkPassword("#editPassword",1);
             });
-            $("#editRePassword").bind('input propertychange',function () {
-                checkRePassword("#editPassword","#editRePassword",1);
+            $("#editRepassword").bind('input propertychange',function () {
+                checkRePassword("#editPassword","#editRepassword",1);
             });
             $("#editPhone").bind('input propertychange',function () {
                 checkPhone("#editPhone",1);
@@ -629,7 +660,7 @@
                 }
             }
             function show_help_block(ele,status,msg) {
-                $(ele).parent().removeClass("has-success has-warning")
+                $(ele).parent().removeClass("has-success has-warning");
                 if(status=="success"){
                     $(ele).parent().addClass("has-success");
                     $(ele).next("span").text(msg);
@@ -795,7 +826,7 @@
                             <div class="modal-header">
                                 <button data-dismiss="modal" class="close" type="button"><span
                                         aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-                                <h4 class="modal-title">角色分配</h4>
+                                <h4 class="modal-title">分配角色</h4>
                             </div>
                             <div class="modal-body" id="roleHandler">
 
@@ -805,6 +836,28 @@
                                     关闭
                                 </button>
                                 <button id="inputRoleChance" class="btn btn-primary" type="button">提交</button>
+                            </div>
+                        </form>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div>
+
+            <div class="modal fade" id="errorWindom" tabindex="-1" role="dialog" aria-labelledby="roleModalLabel">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form role="form" action="" method="post">
+                            <div class="modal-header">
+                                <button data-dismiss="modal" class="close" type="button"><span
+                                        aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                                <h4 class="modal-title" style="font-size: 30px" id="errorWindow_msg">权限不足</h4>
+                            </div>
+                            <div class="modal-body">
+                                <img src="assets/img/sign-error-icon.png" style="width: 200px;height: 200px">
+                            </div>
+                            <div class="modal-footer">
+                                <button id="closeErrorWindom" data-dismiss="modal" class="btn btn-default" type="button">
+                                    关闭
+                                </button>
                             </div>
                         </form>
                     </div><!-- /.modal-content -->
@@ -873,7 +926,7 @@
             <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form role="form" action="user/userDelete" method="post">
+                        <form id="form_delete" role="form" action="user/userDelete?pn=${pageInfo.pageNum}&&keyWord=${keyWord}" method="post">
                             <div class="modal-header">
                                 <button data-dismiss="modal" class="close" type="button"><span
                                         aria-hidden="true">×</span><span class="sr-only">Close</span></button>
