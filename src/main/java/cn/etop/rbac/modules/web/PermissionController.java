@@ -162,7 +162,7 @@ public class PermissionController{
 
     @ResponseBody
     @RequiredPermission("分配角色权限")
-    @RequestMapping(value = "permission/updatePermissionJson", method = RequestMethod.GET)
+    @RequestMapping(value = "permission/updatePermissionJson", method = RequestMethod.POST)
     /**
     * @Description:为角色分配权限，以JSON方式返回
     * @param: [permissionList]
@@ -194,7 +194,8 @@ public class PermissionController{
     }
 
 
-
+    @RequiredPermission("权限测试页面")
+    @RequiresPermissions("permission:permissionTest")
     @RequestMapping("permission/permissionTest")
     /**
     * @Description:加载所有权限到权限测试页面上

@@ -1,5 +1,6 @@
 <%@ page isELIgnored="false" contentType="text/html;charset=UTF-8" language="java" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <html>
 <head>
@@ -285,22 +286,30 @@
                                 <th>
                                     <c:choose>
                                         <c:when test="${fn:contains(permission.expression,'cn.etop')}">
-                                            <button class="btn btn-warning glyphicon glyphicon-cog btn-sm disabled">
-                                                禁止编辑
-                                            </button>
+                                            <shiro:hasPermission name="permission:permissionEdit">
+                                                <button class="btn btn-warning glyphicon glyphicon-cog btn-sm disabled">
+                                                    禁止编辑
+                                                </button>
+                                            </shiro:hasPermission>
+                                            <shiro:hasPermission name="permission:permissionDelete">
                                             <button class="btn btn-danger glyphicon glyphicon-trash btn-sm disabled">
                                                 禁止删除
                                             </button>
+                                            </shiro:hasPermission>
                                         </c:when>
                                         <c:otherwise>
+                                            <shiro:hasPermission name="permission:permissionEdit">
                                             <button name="${permission.id}"
                                                     class="editBtn   btn btn-warning glyphicon glyphicon-cog btn-sm"
                                                     data-toggle="modal" data-target="#editModal">编辑
                                             </button>
+                                            </shiro:hasPermission>
+                                            <shiro:hasPermission name="permission:permissionDelete">
                                             <button name="${permission.id}"
                                                     class="deleteBtn btn btn-danger glyphicon glyphicon-cog btn-sm"
                                                     data-toggle="modal" data-target="#deleteModal">删除
                                             </button>
+                                            </shiro:hasPermission>
                                         </c:otherwise>
                                     </c:choose>
                                 </th>
@@ -311,9 +320,11 @@
             </div>
             <div class="row">
                 <div class="col-md-2">
+                    <shiro:hasPermission name="permission:permissionAdd">
                     <button class="btn btn-primary glyphicon glyphicon-plus" data-toggle="modal"
                             data-target="#addModal">增加
                     </button>
+                    </shiro:hasPermission>
                 </div>
                 <div class="col-md-4">
                     <button type="button" class="btn btn-info">当前页码:${pageInfo.pageNum}</button>

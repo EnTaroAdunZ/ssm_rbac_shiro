@@ -2,6 +2,7 @@
 <% pageContext.setAttribute("APP_PATH", request.getContextPath()); %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <html>
 <head>
     <%
@@ -12,11 +13,13 @@
     %>
     <base href="<%=basePath%>"></base>
     <title>角色管理</title>
-    <link rel="stylesheet" href="assets/css/style.default.css" type="text/css"/>
+    <link rel="stylesheet" href="${APP_PATH}/assets/css/style.default.css" type="text/css"/>
+    <link rel="stylesheet" href="${APP_PATH}/assets/ztree/css/zTreeStyle/zTreeStyle.css" type="text/css">
     <script src="${APP_PATH}/assets/js/jquery-1.11.1.min.js"></script>
+    <script src="${APP_PATH}/assets/ztree/js/jquery.ztree.core.js" type="text/javascript"></script>
+    <script src="${APP_PATH}/assets/ztree/js/jquery.ztree.excheck.js"></script>
     <link href="${APP_PATH}/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <script src="${APP_PATH}/assets/bootstrap/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="${APP_PATH}/assets/css/treeStyle.css" type="text/css"/>
     <style>
         a {
             text-decoration: none;
@@ -53,7 +56,29 @@
             top: 179px;
         }
     </style>
+
+
     <script type="text/javascript">
+        var setting = {
+            check: {
+                enable: true
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            }
+        };
+
+        var zNodes ;
+
+        var code;
+
+        function setCheck() {
+            var zTree = $.fn.zTree.getZTreeObj("treeDemo"),
+                type = { "Y" : "ps", "N" : "ps" };
+            zTree.setting.check.chkboxType =  type;
+        }
         $(function(){
             $('.tree li:has(ul)').addClass('parent_li').find(' > span').attr('title', 'Collapse this branch');
             $('.tree li.parent_li > span').on('click', function (e) {
@@ -91,6 +116,55 @@
                     $("#userinfodrop").attr("style","display:block;");
                 }
             });
+            $(".treeBtn").each(function () {
+                $(this).click(function () {
+                    ID = $(this).attr("name");
+                    $.ajax({
+                        url: "role/treePermission_echo",
+                        data: "ID=" + ID,
+                        type: "POST",
+                        success: function (result) {
+                            if (result.code == 100) {
+                                zNodes=result.extend.allZtreeMsg;
+                                $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+                                setCheck();
+                            } else {
+                                //找不到数据处理或者权限不足
+                            }
+                        }
+                    });
+                });
+            });
+            $("#btn_closeTree").click(function () {
+                $("#treeDemo").empty();
+            });
+            var permissionListTree = new Array();
+            $("#btn_inputTree").click(function () {
+                var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+
+                var nodes=zTree.getCheckedNodes(true);
+                permissionListTree = new Array();
+                permissionListTree.push(ID);
+                for ( var j = 0; j < nodes.length; j++) {
+                    permissionListTree.push(nodes[j].id);
+                }
+                $.ajax({
+
+                    url: "role/treePermission_alter",
+                    data: "permissionListTree="+permissionListTree,
+                    type: "POST",
+                    success: function (result) {
+                        if(result.code ==100){
+                            $("#btn_closeTree").click();
+                        }else{
+                            //返回错误信息
+                        }
+
+                    }
+                });
+
+
+            });
             $(".editBtn").each(function () {
                 $(this).click(function () {
                     ID = $(this).attr("name");
@@ -125,8 +199,6 @@
                 })
             });
             $("#inputPreChance").click(function () {
-
-
                 var permissionList = new Array();
                 permissionList.push(ID);
                 $(".preBtnShow").each(function () {
@@ -139,7 +211,7 @@
 
                     url: "permission/updatePermissionJson",
                     data: "permissionList=" + permissionList,
-                    type: "GET",
+                    type: "POST",
                     success: function () {
                         $("#closePreChance").click();
                     }
@@ -387,7 +459,7 @@
             <div class="modal fade" id="dtreeModal" tabindex="-1" role="dialog" aria-labelledby="preModalLabel">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form role="form" action="role/roleAdd" method="post">
+                        <form role="form" action="" method="post">
                             <div class="modal-header">
                                 <button data-dismiss="modal" class="close" type="button"><span
                                         aria-hidden="true">×</span><span
@@ -395,26 +467,15 @@
                                 <h4 class="modal-title">树形分配</h4>
                             </div>
                             <div class="modal-body" >
-                                <div class="tree well">
-                                    <ul>
-                                        <li>
-                                            <span><i class="icon-folder-open"></i>第一级节点</span>
-                                            <ul>
-                                                <li> <span><i class="icon-minus-sign"></i>第一级_1节点</span></li>
-
-                                            </ul>
-                                        </li>
-                                        <li>
-                                            <span>第二级节点</span>
-                                        </li>
-                                    </ul>
+                                <div>
+                                    <ul id="treeDemo" class="ztree"></ul>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button  data-dismiss="modal" class="btn btn-default" type="button">
+                                <button  id="btn_closeTree" data-dismiss="modal" class="btn btn-default" type="button">
                                     关闭
                                 </button>
-                                <button  class="btn btn-primary" type="button">提交</button>
+                                <button  id="btn_inputTree" class="btn btn-primary" type="button">提交</button>
                             </div>
                         </form>
                     </div><!-- /.modal-content -->
@@ -437,32 +498,44 @@
                                 <th>${role.sn}</th>
                                 <th>${role.name}</th>
                                 <th>
+                                    <shiro:hasPermission name="permission:updatePermissionJson:ajax">
                                     <button name="${role.id}"
                                             class="preBtn btn btn-info glyphicon glyphicon-eye-open btn-sm"
                                             data-toggle="modal" data-target="#preModal"> 权限分配
                                     </button>
+                                    </shiro:hasPermission>
+                                    <shiro:hasPermission name="role:treePermission_echo:ajax">
                                     <button name="${role.id}"
-                                            class="preBtn btn btn-info glyphicon glyphicon-eye-open btn-sm"
+                                            class="treeBtn btn btn-success glyphicon glyphicon-tree-conifer btn-sm"
                                             data-toggle="modal" data-target="#dtreeModal"> 树形分配
                                     </button>
+                                    </shiro:hasPermission>
                                     <c:choose>
                                         <c:when test="${fn:contains(role.name,'系统管理员')||fn:contains(role.name,'管理员')||fn:contains(role.name,'普通用户')}">
+                                            <shiro:hasPermission name="role:roleEdit">
                                             <button class="editBtn btn btn-warning glyphicon glyphicon-cog btn-sm disabled">
                                                 禁止编辑
                                             </button>
+                                            </shiro:hasPermission>
+                                            <shiro:hasPermission name="role:roleDelete">
                                             <button class="deleteBtn btn btn-danger glyphicon glyphicon-trash btn-sm disabled">
                                                 禁止删除
                                             </button>
+                                            </shiro:hasPermission>
                                         </c:when>
                                         <c:otherwise>
+                                            <shiro:hasPermission name="role:roleEdit">
                                             <button name="${role.id}"
                                                     class="editBtn btn btn-warning glyphicon glyphicon-cog btn-sm"
                                                     data-toggle="modal" data-target="#editModal">编辑
                                             </button>
+                                            </shiro:hasPermission>
+                                            <shiro:hasPermission name="role:roleDelete">
                                             <button name="${role.id}"
                                                     class="deleteBtn btn btn-danger glyphicon glyphicon-trash btn-sm"
                                                     data-toggle="modal" data-target="#deleteModal">删除
                                             </button>
+                                            </shiro:hasPermission>
                                         </c:otherwise>
                                     </c:choose>
 
@@ -475,9 +548,11 @@
             </div>
             <div class="row">
                 <div class="col-md-2">
+                    <shiro:hasPermission name="role:roleAdd">
                     <button class="btn btn-primary glyphicon glyphicon-plus" data-toggle="modal"
                             data-target="#addModal">增加
                     </button>
+                    </shiro:hasPermission>
                 </div>
                 <div class="col-md-4">
                     <button type="button" class="btn btn-info">当前页码:${pageInfo.pageNum}</button>

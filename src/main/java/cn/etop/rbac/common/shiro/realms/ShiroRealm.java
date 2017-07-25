@@ -56,16 +56,16 @@ public class ShiroRealm extends AuthorizingRealm {
         }
         User temp=null;
         try {
-            temp=loginServiceImpl.getUserByAccount(username);
+            temp=loginServiceImpl.getUserByAccount (username);
         } catch (Exception e) {
             e.printStackTrace();
         }
         Object principal = username;
         Object credentials = temp.getPassword();
-
         String realmName = getName();
+        ByteSource credentialsSalt = ByteSource.Util.bytes(username);
         SimpleAuthenticationInfo info = null;
-        info = new SimpleAuthenticationInfo(principal, credentials,  realmName);
+        info = new SimpleAuthenticationInfo(principal, credentials, credentialsSalt ,realmName);
         return info;
 
     }

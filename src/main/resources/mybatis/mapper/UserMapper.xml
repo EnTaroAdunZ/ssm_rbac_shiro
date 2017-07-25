@@ -15,21 +15,21 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="cn.etop.rbac.modules.model.User">
-    insert into tbl_user (id, name, phone, 
-      age, experience, account, 
-      password)
-    values (#{id,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, 
-      #{age,jdbcType=INTEGER}, #{experience,jdbcType=BIGINT}, #{account,jdbcType=VARCHAR}, 
-      #{password,jdbcType=VARCHAR})
+    insert into tbl_user (id, name, phone,
+    age, experience, account,
+    password)
+    values (#{id,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR},
+    #{age,jdbcType=INTEGER}, #{experience,jdbcType=BIGINT}, #{account,jdbcType=VARCHAR},
+    #{password,jdbcType=VARCHAR})
   </insert>
   <update id="updateByPrimaryKey" parameterType="cn.etop.rbac.modules.model.User">
     update tbl_user
     set name = #{name,jdbcType=VARCHAR},
-      phone = #{phone,jdbcType=VARCHAR},
-      age = #{age,jdbcType=INTEGER},
-      experience = #{experience,jdbcType=BIGINT},
-      account = #{account,jdbcType=VARCHAR},
-      password = #{password,jdbcType=VARCHAR}
+    phone = #{phone,jdbcType=VARCHAR},
+    age = #{age,jdbcType=INTEGER},
+    experience = #{experience,jdbcType=BIGINT},
+    account = #{account,jdbcType=VARCHAR},
+    password = #{password,jdbcType=VARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
@@ -52,10 +52,10 @@
     where name = #{name}
   </select>
   <resultMap type="cn.etop.rbac.modules.model.User" id="userPermission">
-      <collection property="roleList" ofType="cn.etop.rbac.modules.model.Role">
-        <id column="rid" property="id"/>
-        <result column="rsn" property="sn"/>
-        <result column="rname" property="name"/>
+    <collection property="roleList" ofType="cn.etop.rbac.modules.model.Role">
+      <id column="rid" property="id"/>
+      <result column="rsn" property="sn"/>
+      <result column="rname" property="name"/>
     </collection>
   </resultMap>
   <select id="listPermission" resultMap="userPermission"  parameterType="java.lang.Long">

@@ -3,23 +3,25 @@ package cn.etop.rbac.modules.web;
 import cn.etop.rbac.common.util.PermissionUtil;
 import cn.etop.rbac.modules.json.Msg;
 import cn.etop.rbac.modules.json.RoleJson;
+import cn.etop.rbac.modules.json.ZtreePermission;
 import cn.etop.rbac.modules.model.*;
-import cn.etop.rbac.modules.service.IUserService;
-import cn.etop.rbac.modules.service.IRoleService;
-import cn.etop.rbac.modules.service.IUserToRoleService;
+import cn.etop.rbac.modules.service.*;
 import cn.etop.rbac.common.annotation.RequiredPermission;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.sun.xml.internal.bind.v2.model.core.ID;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +44,13 @@ public class RoleController {
     IUserService userService;
 
     @Autowired
+    IPermissionService permissionService;
+
+    @Autowired
     IUserToRoleService userToRoleService;
+
+    @Autowired
+    IRoleToPermissionService roleToPermissionService;
 
     @RequiredPermission("权限浏览")
     @RequiresPermissions("role:permissionBrowse")
@@ -93,7 +101,11 @@ public class RoleController {
     * @returnType:org.springframework.web.servlet.ModelAndView
     * @Exception:Exception
     */
-    public ModelAndView roleAdd(@Valid Role role)  throws Exception{
+    public ModelAndView roleAdd(@Valid Role role, BindingResult bindingResult)  throws Exception{
+        if(bindingResult.hasErrors()){
+
+        }
+
         roleService.insert(role);
         return new ModelAndView("redirect:/homePage/roleManagement");
     }
@@ -236,6 +248,47 @@ public class RoleController {
         }
         return Msg.success().add("roleJsons",roleJsons);
 
+    }
+
+    @ResponseBody
+    @RequiredPermission("树形分配:获得回显信息")
+    @RequestMapping("role/treePermission_echo")
+    public Msg treePermission_echo(@RequestParam("ID")Long ID) throws Exception{
+        Throwable t = new Throwable();
+        boolean isHasPermission=PermissionUtil.hasPermission(this.getClass(),t.getStackTrace()[0].getMethodName());
+        if(!isHasPermission)
+            return Msg.noPermission().add("returnMsg","您没有权限【树形分配:获得回显信息】");
+        List<ZtreePermission> allZtreeMsg =
+                permissionService.getAllZtreeMsg(ID);
+        System.out.println();
+        return Msg.success().add("allZtreeMsg",allZtreeMsg);
+    }
+
+    @ResponseBody
+    @RequiredPermission("树形分配:修改")
+    @RequestMapping("role/treePermission_alter")
+    public Msg treePermission_alter(@RequestParam("permissionListTree")List<String> permissionListTree
+    ) throws Exception {
+        ArrayList<Long> permissionListID = new ArrayList<>();
+        Long ID=Long.valueOf(permissionListTree.get(0));
+
+        for(String  permissionID:permissionListTree){
+            if(permissionID.charAt(0)=='p'){
+                permissionListID.add(Long.valueOf(permissionID.substring(2,permissionID.length())));
+            }
+        }
+        roleToPermissionService.deleteById(ID);
+        for(Long id:permissionListID){
+            RoleToPermission roleToPermission=new RoleToPermission();
+            Role role = new Role();
+            role.setId(ID);
+            Permission permission=new Permission();
+            permission.setId(id);
+            roleToPermission.setRole(role);
+            roleToPermission.setPermission(permission);
+            roleToPermissionService.addItem(roleToPermission);
+        }
+        return Msg.success();
     }
 
 }

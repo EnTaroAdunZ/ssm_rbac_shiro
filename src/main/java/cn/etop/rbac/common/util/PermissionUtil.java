@@ -1,10 +1,12 @@
 package cn.etop.rbac.common.util;
 
+import cn.etop.rbac.modules.json.ZtreePermission;
 import cn.etop.rbac.modules.model.Permission;
 import cn.etop.rbac.common.annotation.RequiredPermission;
 import cn.etop.rbac.modules.model.Role;
 import cn.etop.rbac.modules.model.User;
 import cn.etop.rbac.modules.service.IRoleService;
+import cn.etop.rbac.modules.service.IRoleToPermissionService;
 import cn.etop.rbac.modules.service.IUserService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -95,6 +98,27 @@ public class PermissionUtil {
         Permission permission = new Permission(replace+":ajax",name);
         return permission;
     }
+
+
+    /**
+     * 查询该角色所属所有的权限
+     * @param id
+     * @param roleService
+     * @return
+     * @throws Exception
+     */
+    public static List<Permission> getPermissionWithRole(Long id,IRoleService roleService) throws Exception {
+        List<Role> roles = roleService.listPermission(id);
+        List<Permission> permissions=new ArrayList<>();
+        for(Role role :roles){
+            if(role!=null)
+           permissions.add( role.getPermissionList().get(0));
+        }
+        return permissions;
+    }
+
+
+
 
     /**
      * @Description:传入User，返回该User所有权限

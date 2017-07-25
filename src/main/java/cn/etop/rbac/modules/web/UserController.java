@@ -9,6 +9,8 @@ import cn.etop.rbac.common.annotation.RequiredPermission;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.crypto.hash.SimpleHash;
+import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -137,18 +139,19 @@ public class UserController{
             return Msg.reject().add("msg",msg);
         }
 
-        boolean b = userService.checkUserNameExit(user.getName());
-        boolean b1 = userService.checkUserAccountExit(user.getAccount());
+        boolean isUserNameExist = userService.checkUserNameExit(user.getName());
+        boolean isUserAccountExist = userService.checkUserAccountExit(user.getAccount());
         HashMap<String, String> errorMap = new HashMap<>();
-        if(b){
+        if(isUserNameExist){
             errorMap.put("#add_name","昵称已经存在！");
         }
-        if(b1){
+        if(isUserAccountExist){
             errorMap.put("#add_account","帐号已经存在！");
         }
-        if(b||b1){
+        if(isUserNameExist||isUserAccountExist){
             return Msg.fail().add("errorMap",errorMap);
         }else{
+            userService.insert(user);
             return Msg.success();
 
         }
@@ -192,6 +195,7 @@ public class UserController{
         if(b||b1){
             return Msg.fail().add("errorMap",errorMap);
         }else{
+
             userService.updateByPrimaryKey(user);
             return Msg.success();
         }

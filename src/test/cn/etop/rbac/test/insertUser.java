@@ -5,6 +5,8 @@ import cn.etop.rbac.modules.service.IUserService;
 import cn.etop.rbac.modules.mapper.UserMapper;
 import cn.etop.rbac.modules.model.Role;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.shiro.crypto.hash.SimpleHash;
+import org.apache.shiro.util.ByteSource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +48,7 @@ public class insertUser {
 
     @Test
     public void test() throws Exception {
-        for(int i=3;i<=1001;i++){
+        for(int i=2;i<=100;i++){
             User user=new User();
             user.setName(i+"号机");
             user.setAccount("ztf"+i);
@@ -56,9 +58,18 @@ public class insertUser {
             user.setAge(i1);
             long l = random.nextLong()%100000000+100000000;
             user.setExperience(l);
-            user.setPhone("0752-"+String.valueOf(l));
+            user.setPhone(String.valueOf(l));
             userService.insert(user);
         }
     }
+
+    @Test
+    public void test2() throws Exception {
+        int i=3;
+        ByteSource credentialsSalt = ByteSource.Util.bytes("ztf3");
+        SimpleHash simpleHash = new SimpleHash("MD5", i+"ztf", credentialsSalt, 16);
+        System.out.println(simpleHash.toString());
+    }
+
 
 }

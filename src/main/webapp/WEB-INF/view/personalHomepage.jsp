@@ -144,8 +144,9 @@
                                 <input type="text" value="年龄:${user.age}" readonly="readonly" class="form-username form-control" >
                             </div>
                             <button type="button" onclick="userManagement()"  class="btn" style="margin-bottom: 5px">用户管理</button>
-                            <button type="button" onclick="permissionManagement()"  class="btn" style="margin-bottom: 5px">权限管理</button>
                             <button type="button" onclick="roleManagement()"  class="btn" style="margin-bottom: 5px">角色管理</button>
+                            <button type="button" onclick="permissionManagement()"  class="btn" style="margin-bottom: 5px">权限管理</button>
+
                             <button type="button" onclick="exit()"  class="btn btn-danger" style="margin-bottom:5px">退出登录</button>
                         </form>
                     </div>

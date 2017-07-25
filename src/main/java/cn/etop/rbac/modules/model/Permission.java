@@ -15,6 +15,16 @@ public class Permission {
 
     private Long id;
 
+    private Long parentID;
+
+    public Long getParentID() {
+        return parentID;
+    }
+
+    public void setParentID(Long parentID) {
+        this.parentID = parentID;
+    }
+
     @Pattern(regexp = "^[a-z0-9.-]{3,30}$",message = "权限标识符必须是3-30位英文和数字组合")
     private String expression;
 

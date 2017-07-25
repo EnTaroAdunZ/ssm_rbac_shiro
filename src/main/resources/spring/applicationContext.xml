@@ -67,6 +67,12 @@
         <!--<property name="cacheManagerConfigFile" value="classpath:ehcache.xml"/>-->
     <!--</bean>-->
     <bean id="jdbcRealm" class="cn.etop.rbac.common.shiro.realms.ShiroRealm">
+        <property name="credentialsMatcher">
+            <bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+                <property name="hashAlgorithmName" value="MD5"></property>
+                <property name="hashIterations" value="16"></property>
+            </bean>
+        </property>
     </bean>
     <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
     <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" depends-on="lifecycleBeanPostProcessor"/>

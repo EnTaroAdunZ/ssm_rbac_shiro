@@ -1,27 +1,21 @@
 package cn.etop.rbac.modules.service.Impl;
-import cn.etop.rbac.common.util.AopTargetUtils;
+import cn.etop.rbac.common.util.PermissionUtil;
+import cn.etop.rbac.modules.json.ZtreePermission;
 import cn.etop.rbac.modules.mapper.PermissionMapper;
+import cn.etop.rbac.modules.mapper.Permission_GroudMapper;
 import cn.etop.rbac.modules.mapper.RoleMapper;
 import cn.etop.rbac.modules.mapper.RoleToPermissionMapper;
 import cn.etop.rbac.modules.model.Permission;
+import cn.etop.rbac.modules.model.Permission_Groud;
 import cn.etop.rbac.modules.model.Role;
 import cn.etop.rbac.modules.model.RoleToPermission;
 import cn.etop.rbac.modules.service.IPermissionService;
-import cn.etop.rbac.common.util.PermissionUtil;
-import cn.etop.rbac.common.annotation.RequiredPermission;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
 
 /**
  * @version V1.0
@@ -44,6 +38,34 @@ public class PermissionImpl implements IPermissionService{
     @Autowired
     private RoleMapper roleMapper;
 
+    @Autowired
+    private Permission_GroudMapper permission_groudMapper;
+
+    @Autowired
+    private RoleServiceImpl roleService;
+
+    @Override
+    public List<ZtreePermission> getAllZtreeMsg(Long id) throws Exception {
+        List<Permission> permissions = permissionMapper.selectAll();
+        List<Permission_Groud> permission_groudMappers = permission_groudMapper.selectAll();
+        List<ZtreePermission> ztreePermissions=new ArrayList<>();
+        List<Permission> permissionWithRole = PermissionUtil.getPermissionWithRole(id, roleService);
+        for(Permission_Groud permission_groud : permission_groudMappers){
+            ZtreePermission ztreePermission=new ZtreePermission(permission_groud);
+            ztreePermissions.add(ztreePermission);
+        }
+        for(Permission permission:permissions){
+            ZtreePermission ztreePermission=new ZtreePermission(permission);
+            for(Permission permission1:permissionWithRole){
+                if(permission.getId()==permission1.getId()){
+                    ztreePermission.setChecked(true);
+                }
+            }
+            ztreePermissions.add(ztreePermission);
+        }
+
+        return ztreePermissions;
+    }
 
     @Override
     /**   

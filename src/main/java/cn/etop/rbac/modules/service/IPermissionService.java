@@ -1,5 +1,6 @@
 package cn.etop.rbac.modules.service;
 
+import cn.etop.rbac.modules.json.ZtreePermission;
 import cn.etop.rbac.modules.model.Permission;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
  * @date: 2017/7/14 15:11
  */
 public interface IPermissionService {
+    List<ZtreePermission> getAllZtreeMsg(Long id) throws Exception;
     List<Permission> list() throws Exception;
 //    void reload() throws Exception;
     void save(Permission permission) throws Exception;

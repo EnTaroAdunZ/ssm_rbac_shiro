@@ -123,12 +123,4 @@ public class HomePageController{
         }
         return mav;
     }
-
-
-    @RequestMapping("homePage/treePermission")
-    public ModelAndView treePermission(HttpServletRequest request){
-        ModelAndView mav = new ModelAndView("useless/treePermission");
-        return mav;
-    }
-
 }

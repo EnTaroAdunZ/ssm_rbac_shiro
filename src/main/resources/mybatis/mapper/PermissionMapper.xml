@@ -5,16 +5,15 @@
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="expression" jdbcType="VARCHAR" property="expression" />
     <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="parentID" jdbcType="BIGINT" property="parentID"/>
   </resultMap>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from tbl_permission
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="cn.etop.rbac.modules.model.Permission" useGeneratedKeys="true" keyProperty="id">
-    insert into tbl_permission (id, expression, name
-      )
-    values (#{id,jdbcType=BIGINT}, #{expression,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}
-      )
+    insert into tbl_permission (id, expression, name,parentID)
+    values (#{id,jdbcType=BIGINT}, #{expression,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{parentID,jdbcType=BIGINT})
   </insert>
 
   <update id="updateByPrimaryKey" parameterType="cn.etop.rbac.modules.model.Permission">
@@ -24,27 +23,28 @@
     where id = #{id,jdbcType=BIGINT}
   </update>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
-    select id, expression, name
+    select id, expression, name,parentID
     from tbl_permission
     where id = #{id,jdbcType=BIGINT}
   </select>
   <select id="selectByName" parameterType="java.lang.String" resultMap="BaseResultMap">
-    select id, expression, name
+    select id, expression, name,parentID
     from tbl_permission
     where name = #{name}
   </select>
   <select id="selectByExpression" parameterType="java.lang.String" resultMap="BaseResultMap">
-    select id, expression, name
+    select id, expression, name,parentID
     from tbl_permission
     where expression = #{expression}
   </select>
   <select id="selectAll" resultMap="BaseResultMap">
-    select id, expression, name
+    select id, expression, name,parentID
     from tbl_permission
   </select>
   <select id="selectByKeyWord" parameterType="java.lang.String" resultMap="BaseResultMap">
-    select id, expression, name
+    select id, expression, name,parentID
     from tbl_permission
     WHERE name LIKE CONCAT(CONCAT('%',#{keyWord},'%'))
   </select>
+
 </mapper>

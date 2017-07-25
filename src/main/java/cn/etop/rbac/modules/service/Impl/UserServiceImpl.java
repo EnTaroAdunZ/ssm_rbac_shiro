@@ -4,6 +4,8 @@ import cn.etop.rbac.common.util.PasswordUtil;
 import cn.etop.rbac.modules.model.User;
 import cn.etop.rbac.modules.service.IUserService;
 import cn.etop.rbac.modules.mapper.UserMapper;
+import org.apache.shiro.crypto.hash.SimpleHash;
+import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -124,8 +126,9 @@ public class UserServiceImpl implements IUserService {
         }
 
         //开始加密过程
-        String generate = PasswordUtil.generate(record.getPassword());
-        record.setPassword(generate);
+        ByteSource credentialsSalt = ByteSource.Util.bytes(record.getAccount());
+        SimpleHash simpleHash = new SimpleHash("MD5",  record.getPassword(), credentialsSalt, 16);
+        record.setPassword(simpleHash.toString());
         return userMapper.insert(record);
     }
 
@@ -137,6 +140,9 @@ public class UserServiceImpl implements IUserService {
     * @Exception:Exception
     */
     public int updateByPrimaryKey(User record) throws Exception{
+        ByteSource credentialsSalt = ByteSource.Util.bytes(record.getAccount());
+        SimpleHash simpleHash = new SimpleHash("MD5",  record.getPassword(), credentialsSalt, 16);
+        record.setPassword(simpleHash.toString());
         return userMapper.updateByPrimaryKey(record);
     }
 }
