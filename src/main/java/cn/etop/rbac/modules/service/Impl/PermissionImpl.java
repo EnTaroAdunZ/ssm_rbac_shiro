@@ -217,6 +217,15 @@ public class PermissionImpl implements IPermissionService{
         return permissionMapper.selectByKeyWord(keyWord);
     }
 
+    @Override
+    public boolean selectIfExist(Permission permission) throws Exception {
+        List<Permission> permissions = permissionMapper.selectIfExist(permission);
+        if(permissions.size()==0){
+            return false;
+        }
+        return true;
+    }
+
 
 //    @Override
 //    /**

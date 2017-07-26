@@ -36,7 +36,7 @@ body,html{ height:100%; font-family:'微软雅黑'; overflow-y:hidden;}
          <p class="main_p">相关信息:${msg}</p>
       </div>
       <div class="text-left" style="margin-top:10%; margin-left:8%;">
-          <a href="login" class="button bg-yellow">返回首页</a>
+          <a href="user/index" class="button bg-yellow">返回首页</a>
       </div>
    </div>
 </div>

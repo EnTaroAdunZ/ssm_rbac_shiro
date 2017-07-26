@@ -1,5 +1,6 @@
 package cn.etop.rbac.modules.web;
 
+import cn.etop.rbac.common.util.ErrorUtil;
 import cn.etop.rbac.common.util.PermissionUtil;
 import cn.etop.rbac.modules.json.Msg;
 import cn.etop.rbac.modules.json.PermissionJson;
@@ -9,10 +10,12 @@ import cn.etop.rbac.modules.service.IUserService;
 import cn.etop.rbac.modules.service.IRoleService;
 import cn.etop.rbac.modules.service.IRoleToPermissionService;
 import cn.etop.rbac.common.annotation.RequiredPermission;
+import com.sun.xml.internal.bind.v2.model.core.ID;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +24,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +52,33 @@ public class PermissionController{
 
     @Autowired
     IRoleToPermissionService roleToPermissionService;
+
+    @ResponseBody
+    @RequestMapping("permission/permissionEditShow")
+    public Msg permissionEditShow(@RequestParam(value = "ID")Long ID) throws Exception {
+        Permission permission = permissionService.selectByPrimaryKey(ID);
+        if(permission!=null){
+            return Msg.success().add("permission",permission);
+        }else{
+            return Msg.fail();
+        }
+    }
+
+    @ResponseBody
+    @RequestMapping("permission/checkExpressionAndName")
+    /**
+    * @Description:检查权限是否存在重复
+    * @param: [name, expression]
+    * @returnType:cn.etop.rbac.modules.json.Msg
+    * @Exception:
+    */
+    public Msg checkExpressionAndName(@RequestParam(value = "name")String name,@RequestParam(value = "expression")String expression) throws Exception {
+        boolean ifExist = permissionService.selectIfExist(new Permission(expression, name));
+        if(!ifExist){
+            return Msg.success();
+        }
+        return Msg.fail();
+    }
 
 
     @RequestMapping("permission/getPermissionByEdit")
@@ -79,10 +110,13 @@ public class PermissionController{
     * @returnType:org.springframework.web.servlet.ModelAndView
     * @Exception:Exception
     */
-    public ModelAndView permissionAdd(Permission permission, @RequestParam(value = "pn",defaultValue ="1")Integer pn, Model model)  throws Exception{
-        StringBuilder sb= new StringBuilder().append("com.test.");
-        sb.append(permission.getExpression());
-        permission.setExpression(sb.toString());
+    public ModelAndView permissionAdd(@Valid Permission permission, BindingResult bindingResult, @RequestParam(value = "pn",defaultValue ="1")Integer pn, Model model)  throws Exception{
+        if(bindingResult.hasErrors()){
+            return ErrorUtil.returnErrorPage(bindingResult);
+        }
+//        StringBuilder sb= new StringBuilder().append("com.test.");
+//        sb.append(permission.getExpression());
+//        permission.setExpression(sb.toString());
         permissionService.insert(permission);
         return new ModelAndView("redirect:/homePage/permissionManagement");
     }
@@ -96,8 +130,11 @@ public class PermissionController{
     * @returnType:org.springframework.web.servlet.ModelAndView
     * @Exception:Exception
     */
-    public ModelAndView permissionEdit(Permission permission,@RequestParam(value = "pn",defaultValue ="1")Integer pn
+    public ModelAndView permissionEdit(@Valid Permission permission, BindingResult bindingResult,@RequestParam(value = "pn",defaultValue ="1")Integer pn
             , Model model,@RequestParam(value = "keyWord",defaultValue ="") String keyWord) throws Exception{
+        if(bindingResult.hasErrors()){
+            return ErrorUtil.returnErrorPage(bindingResult);
+        }
         StringBuilder sb= new StringBuilder().append("com.test.");
         sb.append(permission.getExpression());
         permission.setExpression(sb.toString());
@@ -209,6 +246,8 @@ public class PermissionController{
         mav.addObject("permission",list);
         return mav;
     }
+
+
 
     @ResponseBody
     @RequiredPermission("浏览角色所有权限")

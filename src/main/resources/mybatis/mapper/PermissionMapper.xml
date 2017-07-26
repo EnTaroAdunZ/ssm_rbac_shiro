@@ -46,5 +46,9 @@
     from tbl_permission
     WHERE name LIKE CONCAT(CONCAT('%',#{keyWord},'%'))
   </select>
-
+  <select id="selectIfExist" resultMap="BaseResultMap">
+    select id, expression,name,parentID
+    from tbl_permission
+    WHERE name=#{name} OR expression=#{expression}
+  </select>
 </mapper>

@@ -221,9 +221,10 @@
             });
 
             $('#keyword').bind('input oninput', function() {
+                //拿到关键字
                 var KeyWord=$('#keyword').val();
                 KW=KeyWord;
-
+                //进行搜索后跳到第一页
                 goToPage(KeyWord,1);
             });
 
@@ -237,12 +238,15 @@
                         if(result.code==100){
                             var list=result.extend.pageInfo.list;
                             $.each(list,function (index,item) {
+                                //拼接每一行的数据
                                 build_user_tal(item);
                             });
                             var pageInfo=result.extend.pageInfo;
                             pagenumber=pageInfo.pageNum;
+                            //拼接分页条以及其他
                             build_user_nav(pageInfo);
                         }else{
+                            //权限不足，弹窗警告
                             show_errorWindows(result.extend.returnMsg);
                         }
                     }

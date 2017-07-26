@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50540
 File Encoding         : 65001
 
-Date: 2017-07-17 15:35:56
+Date: 2017-07-26 00:43:18
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -28,15 +28,10 @@ CREATE TABLE `user_ur_ref_role` (
   KEY `role` (`role`),
   CONSTRAINT `user_ur_ref_role_ibfk_1` FOREIGN KEY (`user`) REFERENCES `tbl_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `user_ur_ref_role_ibfk_2` FOREIGN KEY (`role`) REFERENCES `tbl_role` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of user_ur_ref_role
 -- ----------------------------
-INSERT INTO `user_ur_ref_role` VALUES ('14', '1', '1');
-INSERT INTO `user_ur_ref_role` VALUES ('27', '3', '3');
-INSERT INTO `user_ur_ref_role` VALUES ('28', '3', '3');
-INSERT INTO `user_ur_ref_role` VALUES ('32', '2', '2');
-INSERT INTO `user_ur_ref_role` VALUES ('33', '2', '2');
-INSERT INTO `user_ur_ref_role` VALUES ('37', '5', '5');
-INSERT INTO `user_ur_ref_role` VALUES ('38', '5', '4');
+INSERT INTO `user_ur_ref_role` VALUES ('58', '1', '1');
+INSERT INTO `user_ur_ref_role` VALUES ('59', '5', '3');

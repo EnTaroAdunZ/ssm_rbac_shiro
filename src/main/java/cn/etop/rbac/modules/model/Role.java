@@ -16,7 +16,7 @@ public class Role {
 
     private Long id;
 
-    @Pattern(regexp = "^[a-z0-9_-]{3,30}$",message = "角色代码必须是3-30位英文和数字组合")
+    @Pattern(regexp = "^[a-zA-Z0-9_-]{3,30}$",message = "角色代码必须是3-30位英文和数字组合")
     private String sn;
 
     @Pattern(regexp = "^[\\u2E80-\\u9FFF]{1,10}$",message = "角色名必须是1-10位中文组合")
@@ -39,6 +39,15 @@ public class Role {
                 ", sn='" + sn + '\'' +
                 ", name='" + name + '\'' +
                 '}';
+    }
+
+    public Role(){
+
+    }
+
+    public Role(String sn, String name) {
+        this.sn = sn;
+        this.name = name;
     }
 
     public Long getId() {

@@ -59,4 +59,9 @@
      from tbl_role
     WHERE name LIKE CONCAT(CONCAT('%',#{keyWord},'%'))
   </select>
+  <select id="checkIfCountAdd" parameterType="cn.etop.rbac.modules.model.Role" resultMap="BaseResultMap">
+    select id, sn, name
+    from tbl_role
+    WHERE name =#{name} OR sn=#{sn}
+  </select>
 </mapper>

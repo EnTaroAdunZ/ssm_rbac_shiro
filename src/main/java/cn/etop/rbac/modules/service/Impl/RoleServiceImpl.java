@@ -111,4 +111,20 @@ public class RoleServiceImpl implements IRoleService {
         List<Role> roles = roleMapper.listPermission(wid);
         return roles;
     }
+
+
+    @Override
+    /**
+    * @Description:检查用户名、sn是否存在，存在返回false，不存在返回true
+    * @param: [role]
+    * @returnType:boolean
+    * @Exception:
+    */
+    public boolean checkIfCountAdd(Role role) throws Exception {
+        List<Role> roles = roleMapper.checkIfCountAdd(role);
+        if(roles.size()==0){
+            return true;
+        }
+        return false;
+    }
 }

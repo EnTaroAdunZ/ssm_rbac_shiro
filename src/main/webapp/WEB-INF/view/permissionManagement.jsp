@@ -52,6 +52,7 @@
     <script>
         var ID;
         $(document).ready(function () {
+
             $(".userinfo").click(function () {
                 $(".userinfo").toggleClass("active");
                 var style=$(".userinfodrop").attr("style");
@@ -84,6 +85,7 @@
                         type: "POST",
                         success: function (result) {
                             if (result.code == 100) {
+                                //还没写
                                 var permission = result.extend.permission;
                                 $("#editName").attr("value", permission.name);
                                 $("#editExpression").attr("value", permission.expression);
@@ -93,6 +95,93 @@
                         }
                     });
                 })
+            });
+            var isNameCurrent=[false,false];
+            var isExpressionCurrent=[false,false];
+            $("#editExpression").bind('input propertychange',function () {checkExpression("#editExpression",1);});
+            $("#editName").bind('input propertychange',function () {checkName("#editName",1);});
+            $("#add_name").bind('input propertychange',function () {checkName("#add_name",0);});
+            $("#add_expression").bind('input propertychange',function () {checkExpression("#add_expression",0);});
+            function checkName(ele,num) {
+                checkAdd(ele,
+                    /^[\u2E80-\u9FFF]{1,10}$/,
+                    isNameCurrent,num,
+                    "权限名必须是3-10中文组合"
+                );
+            }
+            function checkExpression(ele,num) {
+                checkAdd(ele,
+                    /^[a-zA-Z0-9.-:]{3,30}$/,
+                    isExpressionCurrent,num,
+                    "权限标识符必须是3-30位英文和数字组合"
+                );
+            }
+            function checkAdd(ele,reg,judge,num,tip){
+                judge[num]=false;
+                var regWord=$(ele).val();
+                if(regVerify(ele,regWord,reg,tip)==true){
+                    judge[num]=true;
+                }
+            }
+            function regVerify(ele,regWord,reg,tip) {
+                if(reg.test(regWord)){
+                    show_help_block(ele,"success","格式输入正确！");
+                    return true;
+                }
+                else{
+                    show_help_block(ele,"error",tip);
+                    return false;
+                }
+            }
+            function show_help_block(ele,status,msg) {
+                $(ele).parent().removeClass("has-success has-warning");
+                if(status=="success"){
+                    $(ele).parent().addClass("has-success");
+                    $(ele).next("span").text(msg);
+                }else if(status=="error"){
+                    $(ele).parent().addClass("has-warning");
+                    $(ele).next("span").text(msg);
+                }
+            }
+            function clearFrom(name,sn) {
+                $(name).parent().removeClass("has-success has-warning");
+                $(sn).parent().removeClass("has-success has-warning");
+                $(name).next("span").text("");
+                $(sn).next("span").text("");
+            }
+            $("#btn_close_add").click(function () {
+                clearFrom("#add_name","#add_sn");
+            });
+
+            function checkFormat(nameInput,expressionInput,form,closeBtn,num) {
+                checkName(nameInput,num);
+                checkExpression(expressionInput,num);
+                var name=$(nameInput).val();
+                var expression=$(expressionInput).val();
+                if(isNameCurrent[num]==true&&isExpressionCurrent[num]==true){
+                    $.ajax({
+                        url: "permission/checkExpressionAndName",
+                        data: {"name":name,"expression":expression},
+                        type: "POST",
+                        success: function (result) {
+                            if(result.code==200){
+                                show_help_block(nameInput,"error","权限代码、权限标识符已存在，请重新输入！");
+                                show_help_block(expressionInput,"error","权限代码、权限标识符已存在，请重新输入！");
+                            }
+                            else if(result.code ==100){
+                                $(form).submit();
+                                $(closeBtn).click();
+                            }
+                        }
+                    });
+                }
+            }
+
+            $("#btn_submit_add").click(function () {
+                checkFormat("#add_name","#add_expression","#form_add","#btn_close_add");
+            });
+            $("#btn_submit_edit").click(function () {
+                checkFormat("#editName","#editExpression","#form_edit","#btn_close_edit");
             });
         });
     </script>
@@ -189,7 +278,7 @@
             <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form role="form" action="permission/permissionAdd" method="post">
+                        <form id="form_add" role="form" action="permission/permissionAdd" method="post">
                             <div class="modal-header">
                                 <button data-dismiss="modal" class="close" type="button"><span
                                         aria-hidden="true">×</span><span class="sr-only">Close</span></button>
@@ -197,15 +286,17 @@
                             </div>
                             <div class="modal-body">
                                 <p>权限标识符</p>
-                                <input class="form-control" type="text" name="expression"></input>
+                                <input id="add_expression" class="form-control" type="text" name="expression" />
+                                <span></span>
                             </div>
                             <div class="modal-body">
                                 <p>权限名</p>
-                                <input class="form-control" type="text" name="name"></input>
+                                <input id="add_name" class="form-control" type="text" name="name" />
+                                <span></span>
                             </div>
                             <div class="modal-footer">
-                                <button data-dismiss="modal" class="btn btn-default" type="button">关闭</button>
-                                <button class="btn btn-primary" type="submit">提交</button>
+                                <button id="btn_close_add" data-dismiss="modal" class="btn btn-default" type="button">关闭</button>
+                                <button id="btn_submit_add" class="btn btn-primary" type="button">提交</button>
                             </div>
                         </form>
                     </div><!-- /.modal-content -->
@@ -216,7 +307,7 @@
             <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form role="form" action="permission/permissionEdit?pn=${pageInfo.pageNum}&&keyWord=${keyWord}" method="post">
+                        <form id="form_edit" role="form" action="permission/permissionEdit?pn=${pageInfo.pageNum}&&keyWord=${keyWord}" method="post">
                             <div class="modal-header">
                                 <button data-dismiss="modal" class="close" type="button"><span
                                         aria-hidden="true">×</span><span class="sr-only">Close</span></button>
@@ -229,15 +320,17 @@
                             </div>
                             <div class="modal-body">
                                 <p>权限标识符</p>
-                                <input id="editExpression" class="form-control" type="text" name="expression"></input>
+                                <input id="editExpression" class="form-control" type="text" name="expression" />
+                                <span></span>
                             </div>
                             <div class="modal-body">
                                 <p>权限名</p>
-                                <input id="editName" class="form-control" type="text" name="name"></input>
+                                <input id="editName" class="form-control" type="text" name="name" />
+                                <span></span>
                             </div>
                             <div class="modal-footer">
-                                <button data-dismiss="modal" class="btn btn-default" type="button">关闭</button>
-                                <button class="btn btn-primary" type="submit">提交</button>
+                                <button id="btn_close_edit" data-dismiss="modal" class="btn btn-default" type="button">关闭</button>
+                                <button id="btn_submit_edit" class="btn btn-primary" type="button">提交</button>
                             </div>
                         </form>
                     </div><!-- /.modal-content -->

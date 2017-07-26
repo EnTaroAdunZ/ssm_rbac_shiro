@@ -25,10 +25,10 @@ public class Permission {
         this.parentID = parentID;
     }
 
-    @Pattern(regexp = "^[a-z0-9.-]{3,30}$",message = "权限标识符必须是3-30位英文和数字组合")
+    @Pattern(regexp = "^[a-zA-Z0-9.-:]{3,30}$",message = "权限标识符必须是3-30位英文和数字组合")
     private String expression;
 
-    @Pattern(regexp = "^[\\u2E80-\\u9FFF]{1,10}$",message = "权限名必须是3-30位英文和数字组合")
+    @Pattern(regexp = "^[\\u2E80-\\u9FFF]{1,10}$",message = "权限名必须是3-10中文组合")
     private String name;
 
     @Override

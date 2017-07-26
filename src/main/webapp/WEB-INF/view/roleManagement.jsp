@@ -79,20 +79,20 @@
                 type = { "Y" : "ps", "N" : "ps" };
             zTree.setting.check.chkboxType =  type;
         }
-        $(function(){
-            $('.tree li:has(ul)').addClass('parent_li').find(' > span').attr('title', 'Collapse this branch');
-            $('.tree li.parent_li > span').on('click', function (e) {
-                var children = $(this).parent('li.parent_li').find(' > ul > li');
-                if (children.is(":visible")) {
-                    children.hide('fast');
-                    $(this).attr('title', 'Expand this branch').find(' > i').addClass('icon-plus-sign').removeClass('icon-minus-sign');
-                } else {
-                    children.show('fast');
-                    $(this).attr('title', 'Collapse this branch').find(' > i').addClass('icon-minus-sign').removeClass('icon-plus-sign');
-                }
-                e.stopPropagation();
-            });
-        });
+//        $(function(){
+//            $('.tree li:has(ul)').addClass('parent_li').find(' > span').attr('title', 'Collapse this branch');
+//            $('.tree li.parent_li > span').on('click', function (e) {
+//                var children = $(this).parent('li.parent_li').find(' > ul > li');
+//                if (children.is(":visible")) {
+//                    children.hide('fast');
+//                    $(this).attr('title', 'Expand this branch').find(' > i').addClass('icon-plus-sign').removeClass('icon-minus-sign');
+//                } else {
+//                    children.show('fast');
+//                    $(this).attr('title', 'Collapse this branch').find(' > i').addClass('icon-minus-sign').removeClass('icon-plus-sign');
+//                }
+//                e.stopPropagation();
+//            });
+//        });
     </script>
     <script>
         var ID;
@@ -128,8 +128,9 @@
                                 zNodes=result.extend.allZtreeMsg;
                                 $.fn.zTree.init($("#treeDemo"), setting, zNodes);
                                 setCheck();
-                            } else {
-                                //找不到数据处理或者权限不足
+                            } else if(result.code==250){
+                                $("#btn_closeTree").click();
+                                show_errorWindows(result.extend.returnMsg);
                             }
                         }
                     });
@@ -138,6 +139,10 @@
             $("#btn_closeTree").click(function () {
                 $("#treeDemo").empty();
             });
+            function show_errorWindows(errorMsg) {
+                $("#errorWindow_msg").text(errorMsg);
+                $("#errorWindom").modal();
+            }
             var permissionListTree = new Array();
             $("#btn_inputTree").click(function () {
                 var zTree = $.fn.zTree.getZTreeObj("treeDemo");
@@ -156,8 +161,9 @@
                     success: function (result) {
                         if(result.code ==100){
                             $("#btn_closeTree").click();
-                        }else{
-                            //返回错误信息
+                        }else if(result.code==250){
+                            $("#btn_closeTree").click();
+                            show_errorWindows(result.extend.returnMsg);
                         }
 
                     }
@@ -255,6 +261,111 @@
                     });
                 })
             });
+            var isNameCurrent=[false,false];
+            var isSNCurrent=[false,false];
+            $("#editName").bind('input propertychange',function () {checkName("#editName",1);});
+            $("#editSn").bind('input propertychange',function () {checkSN("#editSn",1);});
+            $("#add_name").bind('input propertychange',function () {checkName("#add_name",0);});
+            $("#add_sn").bind('input propertychange',function () {checkSN("#add_sn",0);});
+            function checkName(ele,num) {
+                checkAdd(ele,
+                    /^[\u2E80-\u9FFF]{1,10}$/,
+                    isNameCurrent,num,
+                    "角色名必须是1-10位中文组合"
+                );
+            }
+            function checkSN(ele,num) {
+                checkAdd(ele,
+                    /^[a-zA-Z0-9_-]{3,30}$/,
+                    isSNCurrent,num,
+                    "角色代码必须是3-30位英文和数字组合"
+                );
+            }
+            function checkAdd(ele,reg,judge,num,tip){
+                judge[num]=false;
+                var regWord=$(ele).val();
+                if(regVerify(ele,regWord,reg,tip)==true){
+                    judge[num]=true;
+                }
+            }
+            function regVerify(ele,regWord,reg,tip) {
+                if(reg.test(regWord)){
+                    show_help_block(ele,"success","格式输入正确！");
+                    return true;
+                }
+                else{
+                    show_help_block(ele,"error",tip);
+                    return false;
+                }
+            }
+            function show_help_block(ele,status,msg) {
+                $(ele).parent().removeClass("has-success has-warning");
+                if(status=="success"){
+                    $(ele).parent().addClass("has-success");
+                    $(ele).next("span").text(msg);
+                }else if(status=="error"){
+                    $(ele).parent().addClass("has-warning");
+                    $(ele).next("span").text(msg);
+                }
+            }
+            $("#btn_close_add").click(function () {
+                clearFrom("#add_name","#add_sn");
+            });
+            $("#btn_submit_add").click(function () {
+                checkName("#add_name",0);
+                checkSN("#add_sn",0);
+                var name=$("#add_name").val();
+                var sn=$("#add_sn").val();
+                if(isNameCurrent[0]==true&&isSNCurrent[0]==true){
+                    $.ajax({
+                        url: "role/ifCountAdd",
+                        data: {"name":name,"sn":sn},
+                        type: "POST",
+                        success: function (result) {
+                            if(result.code==200){
+                                show_help_block("#add_name","error","角色代码、角色名已存在，请重新输入！");
+                                show_help_block("#add_sn","error","角色代码、角色名已存在，请重新输入！");
+                            }
+                            else if(result.code ==100){
+                                $("#form_add").submit();
+                                $("#btn_close_add").click();
+                                console.log("提交成功");
+                            }
+                        }
+                    });
+                }
+            });
+            $("#btn_submit_edit").click(function () {
+                checkName("#editName",1);
+                checkSN("#editSn",1);
+                var name=$("#editName").val();
+                var sn=$("#editSn").val();
+                if(isNameCurrent[1]==true&&isSNCurrent[1]==true){
+                    $.ajax({
+                        url: "role/ifCountAdd",
+                        data: {"name":name,"sn":sn},
+                        type: "POST",
+                        success: function (result) {
+                            if(result.code==200){
+                                show_help_block("#editName","error","角色代码、角色名已存在，请重新输入！");
+                                show_help_block("#editSn","error","角色代码、角色名已存在，请重新输入！");
+                            }
+                            else if(result.code ==100){
+                                $("#form_edit").submit();
+                                $("#btn_close_edit").click();
+                                console.log("提交成功");
+                            }
+                        }
+                    });
+                }
+            });
+            $("#btn_close_edit").click();
+            function clearFrom(name,sn) {
+                $(name).parent().removeClass("has-success has-warning");
+                $(sn).parent().removeClass("has-success has-warning");
+                $(name).next("span").text("");
+                $(sn).next("span").text("");
+            }
         });
     </script>
 
@@ -374,27 +485,52 @@
                 </div><!-- /.modal-dialog -->
             </div>
 
+            <div class="modal fade" id="errorWindom" tabindex="-1" role="dialog" aria-labelledby="roleModalLabel">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form role="form" action="" method="post">
+                            <div class="modal-header">
+                                <button data-dismiss="modal" class="close" type="button"><span
+                                        aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                                <h4 class="modal-title" style="font-size: 30px" id="errorWindow_msg">权限不足</h4>
+                            </div>
+                            <div class="modal-body">
+                                <img src="assets/img/sign-error-icon.png" style="width: 200px;height: 200px">
+                            </div>
+                            <div class="modal-footer">
+                                <button id="closeErrorWindom" data-dismiss="modal" class="btn btn-default" type="button">
+                                    关闭
+                                </button>
+                            </div>
+                        </form>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div>
+
             <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form role="form" action="role/roleAdd" method="post">
+                        <form id="form_add" role="form" action="role/roleAdd" method="post">
                             <div class="modal-header">
                                 <button data-dismiss="modal" class="close" type="button"><span
                                         aria-hidden="true">×</span><span
                                         class="sr-only">Close</span></button>
                                 <h4 class="modal-title">角色添加</h4>
+
                             </div>
                             <div class="modal-body">
                                 <p>角色代码</p>
-                                <input class="form-control" type="text" name="sn"></input>
+                                <input id="add_sn" class="form-control" type="text" name="sn"></input>
+                                <span class="help-block"></span>
                             </div>
                             <div class="modal-body">
                                 <p>角色名</p>
-                                <input class="form-control" type="text" name="name"></input>
+                                <input id="add_name" class="form-control" type="text" name="name"></input>
+                                <span class="help-block"></span>
                             </div>
                             <div class="modal-footer">
-                                <button data-dismiss="modal" class="btn btn-default" type="button">关闭</button>
-                                <button class="btn btn-primary" type="submit">提交</button>
+                                <button id="btn_close_add" data-dismiss="modal" class="btn btn-default" type="button">关闭</button>
+                                <button id="btn_submit_add" class="btn btn-primary" type="button">提交</button>
                             </div>
                         </form>
                     </div><!-- /.modal-content -->
@@ -404,7 +540,7 @@
             <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <form role="form" action="role/roleEdit?pn=${pageInfo.pageNum+1}&&keyWord=${keyWord}" method="post">
+                        <form id="form_edit" role="form" action="role/roleEdit?pn=${pageInfo.pageNum+1}&&keyWord=${keyWord}" method="post">
                             <div class="modal-header">
                                 <button data-dismiss="modal" class="close" type="button"><span
                                         aria-hidden="true">×</span><span
@@ -419,14 +555,16 @@
                             <div class="modal-body">
                                 <p>角色代号</p>
                                 <input id="editSn" class="form-control" type="text" name="sn"/>
+                                <span></span>
                             </div>
                             <div class="modal-body">
                                 <p>角色名</p>
                                 <input id="editName" class="form-control" type="text" name="name"></input>
+                                <span></span>
                             </div>
                             <div class="modal-footer">
-                                <button data-dismiss="modal" class="btn btn-default" type="button">关闭</button>
-                                <button class="btn btn-primary" type="submit">提交</button>
+                                <button id="btn_close_edit" data-dismiss="modal" class="btn btn-default" type="button">关闭</button>
+                                <button id="btn_submit_edit" class="btn btn-primary" type="button">提交</button>
                             </div>
                         </form>
                     </div>

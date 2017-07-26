@@ -1,5 +1,7 @@
 package cn.etop.rbac.modules.web;
 
+import cn.etop.rbac.common.util.ErrorUtil;
+import cn.etop.rbac.common.util.MsgUtil;
 import cn.etop.rbac.common.util.PermissionUtil;
 import cn.etop.rbac.modules.json.Msg;
 import cn.etop.rbac.modules.json.RoleJson;
@@ -52,6 +54,17 @@ public class RoleController {
     @Autowired
     IRoleToPermissionService roleToPermissionService;
 
+    @ResponseBody
+    @RequestMapping("role/ifCountAdd")
+    public Msg ifCountAdd(@RequestParam("name") String name,@RequestParam("sn") String sn) throws Exception {
+        boolean ifCount = roleService.checkIfCountAdd(new Role(sn, name));
+        if(ifCount){
+            return Msg.success();
+        }else{
+            return Msg.fail();
+        }
+    }
+
     @RequiredPermission("权限浏览")
     @RequiresPermissions("role:permissionBrowse")
     @RequestMapping("role/permissionBrowse")
@@ -103,7 +116,7 @@ public class RoleController {
     */
     public ModelAndView roleAdd(@Valid Role role, BindingResult bindingResult)  throws Exception{
         if(bindingResult.hasErrors()){
-
+            return ErrorUtil.returnErrorPage(bindingResult);
         }
 
         roleService.insert(role);
@@ -120,10 +133,13 @@ public class RoleController {
     * @returnType:org.springframework.web.servlet.ModelAndView
     * @Exception:Exception
     */
-    public ModelAndView roleEdit(@Valid Role role,
+    public ModelAndView roleEdit(@Valid Role role,BindingResult bindingResult,
             @RequestParam(value = "pn",defaultValue ="1")Integer pn,
                                  @RequestParam(value = "wid",defaultValue ="0")Long wid,
                                  Model model,@RequestParam(value = "keyWord",defaultValue ="")String keyWord) throws Exception{
+        if(bindingResult.hasErrors()){
+            return ErrorUtil.returnErrorPage(bindingResult);
+        }
         roleService.updateByPrimaryKey(role);
         ModelAndView modelAndView = new ModelAndView("redirect:/homePage/roleManagement");
         modelAndView.addObject("keyWord",keyWord);
@@ -269,6 +285,10 @@ public class RoleController {
     @RequestMapping("role/treePermission_alter")
     public Msg treePermission_alter(@RequestParam("permissionListTree")List<String> permissionListTree
     ) throws Exception {
+        Throwable t = new Throwable();
+        boolean isHasPermission=PermissionUtil.hasPermission(this.getClass(),t.getStackTrace()[0].getMethodName());
+        if(!isHasPermission)
+            return Msg.noPermission().add("returnMsg","您没有权限【树形分配:修改】");
         ArrayList<Long> permissionListID = new ArrayList<>();
         Long ID=Long.valueOf(permissionListTree.get(0));
 

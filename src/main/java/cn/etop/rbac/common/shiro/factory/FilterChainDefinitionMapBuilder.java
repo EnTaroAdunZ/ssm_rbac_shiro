@@ -38,16 +38,16 @@ public class FilterChainDefinitionMapBuilder implements ApplicationContextAware{
     @Autowired
     private ApplicationContext ctx;
 
-//    @Autowired
-//    LinkedHashMap<String, String> map;
-//
-//    public LinkedHashMap<String, String> buildFilterChainDefinitionMap() throws Exception {
-//         这里从数据库拿权限数据
-//         map.put("/login", "anon");
-//        map.put("/checkUser", "anon");
-//        map.put("/**", "authc");
-//        return map;
-//    }
+    @Autowired
+    LinkedHashMap<String, String> map;
+
+    public LinkedHashMap<String, String> buildFilterChainDefinitionMap() throws Exception {
+         //这里从数据库拿权限数据
+         map.put("/login", "anon");
+        map.put("/checkUser", "anon");
+        map.put("/**", "authc");
+        return map;
+    }
 
 
     /**

@@ -80,4 +80,12 @@ public interface PermissionMapper {
      */
     int updateByPrimaryKey(Permission record) throws Exception;
 
+    /**
+     * 检查权限名，全新标识符是否存在
+     * @param permission
+     * @return
+     * @throws Exception
+     */
+    List<Permission> selectIfExist(Permission permission) throws Exception;
+
 }

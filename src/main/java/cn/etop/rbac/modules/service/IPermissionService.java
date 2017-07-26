@@ -21,4 +21,5 @@ public interface IPermissionService {
     int updateByPrimaryKey(Permission record) throws Exception;
     Permission selectByPrimaryKey(Long id) throws Exception;
     List<Permission> selectByKeyWord(String keyWord) throws Exception;
+    boolean selectIfExist(Permission permission) throws Exception;
 }

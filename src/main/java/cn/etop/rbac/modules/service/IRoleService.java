@@ -22,4 +22,5 @@ public interface IRoleService {
     Role selectByPrimaryKey(Long id) throws Exception;
     int updateByPrimaryKey(Role record) throws Exception;
     List<Role> listPermission(Long wid) throws Exception;
+    boolean checkIfCountAdd(Role role) throws Exception;
 }

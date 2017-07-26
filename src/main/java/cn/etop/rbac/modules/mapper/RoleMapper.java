@@ -86,4 +86,14 @@ public interface RoleMapper {
      * @throws Exception
      */
     List<Role> selectByKeyWord(@Param("keyWord")String keyWord) throws Exception;
+
+    /**
+     * 返回名字以及sn一致的角色
+     * @param role
+     * @return
+     * @throws Exception
+     */
+    List<Role> checkIfCountAdd(Role role) throws Exception;
+
+
 }
