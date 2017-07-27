@@ -96,6 +96,7 @@
         <!--</property>-->
         <property name="filterChainDefinitions">
         <value>
+            /assets/**=anon
             /login=anon
             /checkUser=anon
             /** = authc
